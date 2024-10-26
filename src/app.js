@@ -1,11 +1,31 @@
 const express = require("express");
-
+const connect = require("./config/database");
+const validator = require("validator");
+const User = require("./models/user");
 const app = express();
+const jwt = require("jsonwebtoken");
+const cookieParser = require("cookie-parser");
+const { userAuth } = require("./middleware/auth");
 
-app.get("/", (req, res) => {
-  res.send("Hello World");
-});
+app.use(express.json());
+app.use(cookieParser());
 
-app.listen(3000, () => {
-  console.log("Listening on port 3000");
-});
+const authRouter = require("./routes/auth");
+const profileRouter = require("./routes/profile");
+const requestRouter = require("./routes/request");
+
+app.use("/", authRouter);
+app.use("/", profileRouter);
+app.use("/", requestRouter);
+
+connect()
+  .then(() => {
+    console.log("Database connected");
+
+    app.listen(3000, () => {
+      console.log("Listening on port 3000");
+    });
+  })
+  .catch((err) => {
+    console.error("Error connecting to database", err);
+  });
